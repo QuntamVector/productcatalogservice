@@ -3,22 +3,19 @@ pipeline {
 
     environment {
         IMAGE_NAME = "manojkrishnappa/productcatalogservice:${GIT_COMMIT}"
-        AWS_REGION = "us-west-2"
-        CLUSTER_NAME = "itkannadigaru-cluster"
-        NAMESPACE     = "itkannadigaru"
     }
 
     stages {
 
         stage('Git Checkout') {
             steps {
-                git url: 'https://github.com/ManojKRISHNAPPA/Microservice.git', branch: 'main'
+                git url: 'https://github.com/ITkannadigaru/productcatalogservice.git', branch: 'main'
             }
         }
 
         stage('Run Unit Tests') {
             steps {
-                dir('src/productcatalogservice') {
+                {
                     sh 'go test ./...'
                 }
             }
@@ -26,7 +23,7 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                dir('src/productcatalogservice') {
+                 {
                     sh '''
                         printenv
                         docker build -t ${IMAGE_NAME} .
@@ -54,22 +51,6 @@ pipeline {
                 sh 'docker push ${IMAGE_NAME}'
             }
         }
-
-        // Uncomment and configure once EKS cluster is ready
-        // stage('Deploy to EKS') {
-        //     steps {
-        //         withCredentials([[
-        //             $class: 'AmazonWebServicesCredentialsBinding',
-        //             credentialsId: 'aws-creds'
-        //         ]]) {
-        //             sh '''
-        //                 aws eks update-kubeconfig --region ${AWS_REGION} --name ${CLUSTER_NAME}
-        //                 kubectl set image deployment/productcatalogservice \
-        //                     productcatalogservice=${IMAGE_NAME} -n ${NAMESPACE}
-        //             '''
-        //         }
-        //     }
-        // }
 
     }
 
